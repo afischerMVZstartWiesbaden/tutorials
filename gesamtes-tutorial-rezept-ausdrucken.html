@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gesamtes Tutorial Rezept ausdrucken</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: #0f0f0f; color: #f0ece4; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px; }
+  .header { text-align: center; margin-bottom: 20px; margin-top: 20px; animation: fadeIn 0.4s ease; }
+  .label { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #2d6a4f; margin-bottom: 8px; }
+  h1 { font-size: 1.3rem; font-weight: 600; line-height: 1.3; }
+  .pdf-wrap { width: 100%; max-width: 900px; flex: 1; animation: fadeIn 0.5s ease 0.1s both; }
+  iframe { width: 100%; height: 80vh; border: none; border-radius: 4px; display: block; }
+  .footer { margin-top: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #444; text-align: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="label">Dokument · Praxisintern</div>
+  <h1>Gesamtes Tutorial Rezept ausdrucken</h1>
+</div>
+<div class="pdf-wrap">
+  <iframe src="https://www.dropbox.com/scl/fi/hyoo2775a22hgagmis0t4/Rezept-Ausdrucken.pdf?rlkey=8exr01z7gbdddt9qi7re2klgl&st=cauxodt2&raw=1"></iframe>
+</div>
+<div class="footer">Praxisinterne Nutzung · Nicht weitergeben</div>
+</body>
+</html>
