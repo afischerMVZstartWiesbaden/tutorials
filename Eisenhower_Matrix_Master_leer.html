@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eisenhower Matrix</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --border: #2e2c28;
+    --text: #e8e4dc;
+    --muted: #6b6760;
+    --q1: #c0392b;
+    --q2: #2980b9;
+    --q3: #e67e22;
+    --q4: #27ae60;
+    --q1-bg: rgba(192,57,43,0.08);
+    --q2-bg: rgba(41,128,185,0.08);
+    --q3-bg: rgba(230,126,34,0.08);
+    --q4-bg: rgba(39,174,96,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  header {
+    padding: 22px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .title-input {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    outline: none;
+    padding: 0 2px;
+    transition: border-color 0.15s;
+  }
+  .title-input:hover { border-bottom-color: var(--border); }
+  .title-input:focus { border-bottom-color: var(--muted); }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px;
+    min-width: 190px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .task-count {
+    background: var(--border);
+    color: var(--muted);
+    border-radius: 99px;
+    padding: 1px 7px;
+    font-size: 0.58rem;
+  }
+
+  .import-btn {
+    background: var(--border);
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .import-btn:hover { background: #3a3834; color: var(--text); }
+
+  .import-panel {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .import-panel.open { display: flex; }
+
+  .import-textarea {
+    width: 100%;
+    height: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    line-height: 1.6;
+    padding: 8px 10px;
+    border-radius: 4px;
+    outline: none;
+    resize: none;
+  }
+  .import-textarea:focus { border-color: var(--muted); }
+  .import-textarea::placeholder { color: var(--muted); opacity: 0.6; }
+
+  .import-actions { display: flex; gap: 6px; }
+  .import-confirm {
+    flex: 1; background: #2e5a3a; border: none; color: #7ecf9a;
+    font-family: 'DM Mono', monospace; font-size: 0.63rem;
+    padding: 6px; border-radius: 4px; cursor: pointer;
+  }
+  .import-confirm:hover { background: #3a7a4e; }
+  .import-cancel {
+    flex: 1; background: var(--border); border: none; color: var(--muted);
+    font-family: 'DM Mono', monospace; font-size: 0.63rem;
+    padding: 6px; border-radius: 4px; cursor: pointer;
+  }
+  .import-cancel:hover { background: #3a3834; color: var(--text); }
+
+  .add-task-row {
+    display: flex;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .add-task-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    border-radius: 4px;
+    outline: none;
+  }
+  .add-task-input:focus { border-color: var(--muted); }
+  .add-task-input::placeholder { color: var(--muted); }
+
+  .add-btn {
+    background: var(--border); border: none; color: var(--text);
+    font-size: 1rem; width: 28px; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn:hover { background: #3a3834; }
+
+  .task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+
+  /* ── TASK ITEM ── */
+  .task-item {
+    margin: 2px 8px;
+    padding: 7px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    cursor: grab;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 0.12s, opacity 0.2s;
+  }
+  .task-item:hover { border-color: var(--muted); }
+  .task-item:hover .item-del { opacity: 1; }
+  .task-item.dragging { opacity: 0.35; cursor: grabbing; }
+
+  .item-text { flex: 1; }
+
+  .drag-hint {
+    color: var(--border);
+    font-size: 0.65rem;
+    flex-shrink: 0;
+  }
+
+  .item-del {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+    padding: 1px 3px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.12s, background 0.12s;
+    flex-shrink: 0;
+  }
+  .item-del:hover { background: rgba(192,57,43,0.15); color: #e74c3c; }
+
+  .matrix-title-input {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    outline: none;
+    padding: 0 2px;
+    text-align: right;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .matrix-title-input:hover { border-bottom-color: var(--border); }
+  .matrix-title-input:focus { border-bottom-color: var(--muted); }
+
+  /* ── MATRIX ── */
+  .matrix-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 18px;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .axis-top {
+    padding-left: 48px;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .matrix-body {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .axis-v-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 44px;
+    flex-shrink: 0;
+  }
+
+  .axis-v {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .matrix-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .quadrant {
+    border-radius: 7px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color 0.18s, background 0.18s;
+  }
+  .quadrant.drag-over { border-color: currentColor; background: color-mix(in srgb, currentColor 10%, transparent); }
+
+  .q1 { color: var(--q1); background: var(--q1-bg); }
+  .q2 { color: var(--q2); background: var(--q2-bg); }
+  .q3 { color: var(--q3); background: var(--q3-bg); }
+  .q4 { color: var(--q4); background: var(--q4-bg); }
+
+  .q-header {
+    padding: 8px 12px 6px;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .q-title-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    color: color-mix(in srgb, currentColor 65%, var(--text));
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 3px;
+    outline: none;
+    flex: 1;
+    min-width: 0;
+  }
+  .q-title-input:focus { border-bottom-color: currentColor; }
+
+  .q-count {
+    font-size: 0.58rem;
+    color: color-mix(in srgb, currentColor 45%, transparent);
+    flex-shrink: 0;
+  }
+
+  .q-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  /* ── Q-ITEM ── */
+  .q-item {
+    background: color-mix(in srgb, var(--bg) 75%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 0.68rem;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: grab;
+    transition: border-color 0.12s, opacity 0.2s;
+    animation: slideIn 0.18s ease;
+  }
+  .q-item:hover { border-color: color-mix(in srgb, currentColor 55%, transparent); }
+  .q-item:hover .item-del,
+  .q-item:hover .return-btn { opacity: 1; }
+  .q-item.dragging { opacity: 0.35; cursor: grabbing; }
+
+  .q-item-text { flex: 1; color: var(--text); }
+
+  .return-btn {
+    background: none;
+    border: none;
+    color: color-mix(in srgb, currentColor 55%, transparent);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 1px 3px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.12s, background 0.12s;
+    flex-shrink: 0;
+  }
+  .return-btn:hover { background: color-mix(in srgb, currentColor 12%, transparent); color: currentColor; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .drop-hint {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(in srgb, currentColor 18%, transparent);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    pointer-events: none;
+  }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<header>
+  <input class="title-input" id="mainTitle" value="Eisenhower Matrix" size="20">
+  <span class="subtitle">Prioritize · Delegate · Eliminate</span>
+</header>
+
+<div class="workspace">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>Aufgaben</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="task-count" id="listCount">0</span>
+        <button class="import-btn" id="importBtn">↓ Import</button>
+      </div>
+    </div>
+
+    <div class="import-panel" id="importPanel">
+      <textarea class="import-textarea" id="importText"
+        placeholder="Erinnerungen einfügen&#10;Eine Zeile = eine Aufgabe&#10;&#10;z.B.:&#10;Therapiebericht schreiben&#10;Abrechnung prüfen"></textarea>
+      <div class="import-actions">
+        <button class="import-confirm" id="importConfirm">Importieren</button>
+        <button class="import-cancel"  id="importCancel">Abbrechen</button>
+      </div>
+    </div>
+
+    <div class="add-task-row">
+      <input class="add-task-input" id="taskInput" type="text" placeholder="Neue Aufgabe…" maxlength="120">
+      <button class="add-btn" id="addBtn">+</button>
+    </div>
+
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <div class="matrix-wrap">
+    <div style="padding-left:48px; display:flex; justify-content:flex-end; padding-right:4px;">
+      <input class="matrix-title-input" id="matrixTitle" value="Eisenhower Matrix">
+    </div>
+    <div class="axis-top">← Nicht dringend &nbsp;·&nbsp; Dringend →</div>
+
+    <div class="matrix-body">
+      <div class="axis-v-wrap">
+        <div class="axis-v">Wichtig ↑</div>
+        <div class="axis-v">↓ Nicht wichtig</div>
+      </div>
+
+      <div class="matrix-grid">
+        <div class="quadrant q1" id="q1" data-quadrant="q1">
+          <div class="q-header">
+            <input class="q-title-input" id="q1title" value="Wichtig + Dringend">
+            <span class="q-count" id="q1count">0</span>
+          </div>
+          <div class="q-items" id="q1items"></div>
+        </div>
+
+        <div class="quadrant q2" id="q2" data-quadrant="q2">
+          <div class="q-header">
+            <input class="q-title-input" id="q2title" value="Wichtig + Nicht dringend">
+            <span class="q-count" id="q2count">0</span>
+          </div>
+          <div class="q-items" id="q2items"></div>
+        </div>
+
+        <div class="quadrant q3" id="q3" data-quadrant="q3">
+          <div class="q-header">
+            <input class="q-title-input" id="q3title" value="Nicht wichtig + Dringend">
+            <span class="q-count" id="q3count">0</span>
+          </div>
+          <div class="q-items" id="q3items"></div>
+        </div>
+
+        <div class="quadrant q4" id="q4" data-quadrant="q4">
+          <div class="q-header">
+            <input class="q-title-input" id="q4title" value="Nicht wichtig + Nicht dringend">
+            <span class="q-count" id="q4count">0</span>
+          </div>
+          <div class="q-items" id="q4items"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let tasks  = JSON.parse(localStorage.getItem('em_tasks')  || '[]');
+let matrix = JSON.parse(localStorage.getItem('em_matrix') || '{"q1":[],"q2":[],"q3":[],"q4":[]}');
+let dragData = null;
+
+function save() {
+  localStorage.setItem('em_tasks',  JSON.stringify(tasks));
+  localStorage.setItem('em_matrix', JSON.stringify(matrix));
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderList() {
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  document.getElementById('listCount').textContent = tasks.length;
+
+  tasks.forEach(task => {
+    const el = document.createElement('div');
+    el.className = 'task-item';
+    el.draggable = true;
+    el.innerHTML = `
+      <span class="item-text">${esc(task.text)}</span>
+      <button class="item-del" title="Löschen">✕</button>
+      <span class="drag-hint">⠿</span>`;
+
+    el.addEventListener('dragstart', e => {
+      dragData = { id: task.id, source: 'list' };
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+    el.querySelector('.item-del').addEventListener('click', e => {
+      e.stopPropagation();
+      tasks = tasks.filter(t => t.id !== task.id);
+      save(); renderList();
+    });
+
+    list.appendChild(el);
+  });
+}
+
+function renderMatrix() {
+  ['q1','q2','q3','q4'].forEach(q => {
+    const container = document.getElementById(q + 'items');
+    const items = matrix[q];
+    document.getElementById(q + 'count').textContent = items.length;
+    container.innerHTML = '';
+
+    if (items.length === 0) {
+      const hint = document.createElement('div');
+      hint.className = 'drop-hint';
+      hint.textContent = '↓ Aufgabe hier ablegen';
+      container.appendChild(hint);
+      return;
+    }
+
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'q-item';
+      el.draggable = true;
+      el.innerHTML = `
+        <span class="q-item-text">${esc(item.text)}</span>
+        <button class="return-btn" title="Zurück zur Liste">↩</button>
+        <button class="item-del"   title="Löschen">✕</button>`;
+
+      el.addEventListener('dragstart', e => {
+        dragData = { id: item.id, source: q };
+        el.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+      el.querySelector('.return-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        const i = matrix[q].findIndex(t => t.id === item.id);
+        if (i > -1) { const [it] = matrix[q].splice(i, 1); tasks.push(it); }
+        save(); renderList(); renderMatrix();
+      });
+
+      el.querySelector('.item-del').addEventListener('click', e => {
+        e.stopPropagation();
+        matrix[q] = matrix[q].filter(t => t.id !== item.id);
+        save(); renderMatrix();
+      });
+
+      container.appendChild(el);
+    });
+  });
+}
+
+// Drag & Drop
+document.querySelectorAll('.quadrant').forEach(quad => {
+  quad.addEventListener('dragover',  e => { e.preventDefault(); quad.classList.add('drag-over'); });
+  quad.addEventListener('dragleave', e => { if (!quad.contains(e.relatedTarget)) quad.classList.remove('drag-over'); });
+  quad.addEventListener('drop', e => {
+    e.preventDefault();
+    quad.classList.remove('drag-over');
+    if (!dragData) return;
+    const tq = quad.dataset.quadrant;
+    let item;
+    if (dragData.source === 'list') {
+      const i = tasks.findIndex(t => t.id === dragData.id);
+      if (i === -1) return;
+      [item] = tasks.splice(i, 1);
+    } else {
+      const i = matrix[dragData.source].findIndex(t => t.id === dragData.id);
+      if (i === -1) return;
+      [item] = matrix[dragData.source].splice(i, 1);
+    }
+    matrix[tq].push(item);
+    save(); renderList(); renderMatrix();
+    dragData = null;
+  });
+});
+
+const taskListEl = document.getElementById('taskList');
+taskListEl.addEventListener('dragover', e => e.preventDefault());
+taskListEl.addEventListener('drop', e => {
+  e.preventDefault();
+  if (!dragData || dragData.source === 'list') return;
+  const i = matrix[dragData.source].findIndex(t => t.id === dragData.id);
+  if (i > -1) { const [it] = matrix[dragData.source].splice(i, 1); tasks.push(it); }
+  save(); renderList(); renderMatrix();
+  dragData = null;
+});
+
+// Add task
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const text = input.value.trim();
+  if (!text) return;
+  tasks.push({ id: uid(), text });
+  input.value = '';
+  save(); renderList();
+}
+document.getElementById('addBtn').addEventListener('click', addTask);
+document.getElementById('taskInput').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+// Import
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importPanel').classList.toggle('open');
+  if (document.getElementById('importPanel').classList.contains('open'))
+    document.getElementById('importText').focus();
+});
+document.getElementById('importCancel').addEventListener('click', () => {
+  document.getElementById('importPanel').classList.remove('open');
+  document.getElementById('importText').value = '';
+});
+document.getElementById('importConfirm').addEventListener('click', () => {
+  const lines = document.getElementById('importText').value.split('\n').map(l => l.trim()).filter(Boolean);
+  lines.forEach(text => tasks.push({ id: uid(), text }));
+  save(); renderList();
+  document.getElementById('importPanel').classList.remove('open');
+  document.getElementById('importText').value = '';
+});
+
+// Titles
+function saveTitles() {
+  const t = {};
+  ['q1','q2','q3','q4'].forEach(q => t[q] = document.getElementById(q+'title').value);
+  localStorage.setItem('em_titles', JSON.stringify(t));
+}
+function loadTitles() {
+  const saved = JSON.parse(localStorage.getItem('em_titles') || 'null');
+  if (!saved) return;
+  ['q1','q2','q3','q4'].forEach(q => { if (saved[q]) document.getElementById(q+'title').value = saved[q]; });
+}
+['q1','q2','q3','q4'].forEach(q => document.getElementById(q+'title').addEventListener('input', saveTitles));
+
+// Matrix title persistence
+const matrixTitleEl = document.getElementById('matrixTitle');
+if (matrixTitleEl) {
+  const saved = localStorage.getItem('em_matrix_title');
+  if (saved) matrixTitleEl.value = saved;
+  matrixTitleEl.addEventListener('input', () => localStorage.setItem('em_matrix_title', matrixTitleEl.value));
+}
+
+// Main title persistence  
+const mainTitleEl = document.getElementById('mainTitle');
+if (mainTitleEl) {
+  const saved = localStorage.getItem('em_main_title');
+  if (saved) mainTitleEl.value = saved;
+  mainTitleEl.addEventListener('input', () => localStorage.setItem('em_main_title', mainTitleEl.value));
+}
+
+// Init
+// Keine Demo-Daten — leeres Board beim ersten Öffnen
+renderList();
+renderMatrix();
+loadTitles();
+</script>
+</body>
+</html>
